@@ -6,14 +6,15 @@
 ## 核心功能模組
 
 ### 1. 專案架構與環境設定
-- [ ] 初始化前端專案（Vue + TypeScript）
-- [ ] 設定響應式設計框架（Tailwind CSS / Vuetify / Element Plus）
-- [ ] 初始化後端專案（NestJS）
-- [ ] 設定資料庫（SQLite/PostgreSQL/MySQL）
-- [ ] 配置開發環境與生產環境變數
-- [ ] 設定 API 路由結構
-- [ ] 配置 CORS 與安全性設定
-- [ ] 設定版本控制（Git）與 .gitignore
+- [x] 初始化前端專案（Vue + TypeScript）
+- [x] 設定響應式設計框架（Tailwind CSS / Vuetify / Element Plus）
+- [x] 初始化後端專案（NestJS）
+- [x] 設定資料庫（SQLite/PostgreSQL/MySQL）
+- [x] 配置開發環境與生產環境變數
+- [x] 設定 API 路由結構
+- [x] 配置 CORS 與安全性設定
+- [x] 設定版本控制（Git）與 .gitignore
+- [x] 設定一個指令 同時啟動前後端服務
 
 ### 2. 用戶認證與授權系統
 - [ ] 設計用戶資料模型（一般用戶 vs 召集人）
