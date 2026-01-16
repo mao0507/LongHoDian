@@ -5,6 +5,7 @@ alwaysApply: true
 
 # 語言與框架
 - 一律使用 TypeScript，不允許 JavaScript。
+- 一律使用 Eslint 、 Prettier
 
 # 命名規範
 - 變數與函式：camelCase
