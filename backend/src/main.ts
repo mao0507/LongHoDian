@@ -1,9 +1,11 @@
-import { NestFactory } from '@nestjs/core'
+import { NestFactory, Reflector } from '@nestjs/core'
 import { ValidationPipe } from '@nestjs/common'
 import { AppModule } from './app.module'
+import { JwtAuthGuard } from './api/auth/jwt-auth.guard'
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
+  const reflector = app.get(Reflector)
 
   // 啟用全域驗證管道
   app.useGlobalPipes(
@@ -11,8 +13,11 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
-    }),
+    })
   )
+
+  // 設定全域 JWT Guard（可透過 @Public() 裝飾器跳過）
+  app.useGlobalGuards(new JwtAuthGuard(reflector))
 
   // CORS 設定
   app.enableCors({

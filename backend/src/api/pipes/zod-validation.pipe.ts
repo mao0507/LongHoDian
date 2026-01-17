@@ -2,11 +2,10 @@ import { PipeTransform, Injectable, ArgumentMetadata, BadRequestException } from
 import { ZodSchema, ZodError } from 'zod'
 
 /**
- * Zod 驗證管道
- * 使用方式：在 Controller 方法參數上使用 @Body(ZodValidationPipe(CreateExampleSchema))
+ * Zod 驗證管道類別
  */
 @Injectable()
-export class ZodValidationPipe implements PipeTransform {
+class ZodValidationPipeClass implements PipeTransform {
   constructor(private schema: ZodSchema) {}
 
   transform(value: unknown, metadata: ArgumentMetadata) {
@@ -26,6 +25,6 @@ export class ZodValidationPipe implements PipeTransform {
 }
 
 // 輔助函數：建立 Zod 驗證管道
-export function ZodValidationPipe(schema: ZodSchema) {
-  return new ZodValidationPipe(schema)
+export function ZodValidationPipe(schema: ZodSchema): ZodValidationPipeClass {
+  return new ZodValidationPipeClass(schema)
 }
