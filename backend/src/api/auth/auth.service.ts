@@ -18,7 +18,7 @@ export class AuthService {
    * 註冊新用戶
    */
   async register(registerDto: RegisterDto): Promise<{ user: Omit<User, 'passwordHash'>; token: string }> {
-    const { username, nickname, role = 'user' } = registerDto
+    const { username, nickname, password, role = 'user' } = registerDto
 
     // 檢查用戶名是否已存在
     const existingUser = await this.userRepository.findOne({ where: { username } })
@@ -26,10 +26,15 @@ export class AuthService {
       throw new ConflictException('使用者名稱已被使用')
     }
 
-    // 建立新用戶（簡單暱稱登入，不需要密碼）
+    // 雜湊密碼
+    const saltRounds = 10
+    const passwordHash = await bcrypt.hash(password, saltRounds)
+
+    // 建立新用戶
     const user = this.userRepository.create({
       username,
       nickname: nickname || username,
+      passwordHash,
       role: role === 'organizer' ? UserRole.ORGANIZER : UserRole.USER,
     })
 
@@ -39,18 +44,28 @@ export class AuthService {
     const token = this.generateToken(user)
 
     // 移除密碼雜湊後返回
-    const { passwordHash, ...userWithoutPassword } = user
+    const { passwordHash: _, ...userWithoutPassword } = user
     return { user: userWithoutPassword, token }
   }
 
   /**
-   * 登入（簡單暱稱登入）
+   * 登入
    */
   async login(loginDto: LoginDto): Promise<{ user: Omit<User, 'passwordHash'>; token: string }> {
-    const { username } = loginDto
+    const { username, password } = loginDto
 
     const user = await this.userRepository.findOne({ where: { username } })
     if (!user) {
+      throw new UnauthorizedException('使用者名稱或密碼錯誤')
+    }
+
+    // 驗證密碼
+    if (!user.passwordHash) {
+      throw new UnauthorizedException('使用者名稱或密碼錯誤')
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.passwordHash)
+    if (!isPasswordValid) {
       throw new UnauthorizedException('使用者名稱或密碼錯誤')
     }
 
