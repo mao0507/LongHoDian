@@ -59,23 +59,39 @@
           !item.isActive && 'opacity-60',
         ]"
       >
+        <!-- 品項圖片 -->
+        <div v-if="item.imageUrl" class="mb-ds-200 rounded-ds-100 overflow-hidden bg-ds-background-neutral-subtle">
+          <img :src="item.imageUrl" :alt="item.name" class="w-full h-40 object-cover" />
+        </div>
+
         <!-- 品項狀態標籤 -->
-        <div class="flex justify-between items-start mb-ds-300">
-          <span
-            :class="[
-              'inline-flex items-center px-ds-150 py-ds-050 rounded-full text-xs font-medium',
-              item.isActive ? 'bg-ds-background-success text-ds-text-accent-green' : 'bg-ds-background-neutral text-ds-text-subtle',
-            ]"
-          >
-            {{ item.isActive ? '啟用' : '停用' }}
-          </span>
-          <span v-if="item.category" class="text-xs text-ds-text-subtle bg-ds-background-neutral px-ds-100 py-ds-050 rounded-ds-050">
-            {{ item.category }}
-          </span>
+        <div class="flex justify-between items-start mb-ds-300 flex-wrap gap-ds-100">
+          <div class="flex gap-ds-075 flex-wrap">
+            <span
+              :class="[
+                'inline-flex items-center px-ds-150 py-ds-050 rounded-full text-xs font-medium',
+                item.isActive ? 'bg-ds-background-success text-ds-text-accent-green' : 'bg-ds-background-neutral text-ds-text-subtle',
+              ]"
+            >
+              {{ item.isActive ? '啟用' : '停用' }}
+            </span>
+            <span
+              v-if="item.isRecommended"
+              class="inline-flex items-center px-ds-150 py-ds-050 rounded-full text-xs font-medium bg-ds-background-warning text-ds-text-accent-yellow"
+            >
+              推薦
+            </span>
+            <span v-if="item.category" class="text-xs text-ds-text-subtle bg-ds-background-neutral px-ds-100 py-ds-050 rounded-ds-050">
+              {{ item.category }}
+            </span>
+          </div>
         </div>
 
         <!-- 品項資訊 -->
         <h3 class="text-lg font-semibold text-ds-text mb-ds-150">{{ item.name }}</h3>
+        <div v-if="item.description" class="text-sm text-ds-text-subtle mb-ds-150 line-clamp-2">
+          {{ item.description }}
+        </div>
         <div class="text-2xl font-bold text-ds-text-accent-blue mb-ds-150">NT$ {{ formatPrice(item.price) }}</div>
         <div v-if="item.notes" class="text-sm text-ds-text-subtle mb-ds-300">
           <span class="font-medium">備註：</span>{{ item.notes }}

@@ -67,6 +67,67 @@
           />
         </div>
 
+        <div>
+          <label for="imageUrl" class="block text-sm font-medium text-ds-text mb-ds-075">
+            圖片 URL
+          </label>
+          <input
+            id="imageUrl"
+            v-model="formData.imageUrl"
+            type="url"
+            class="w-full px-ds-200 py-ds-100 border border-ds-border rounded-ds-100 bg-ds-surface text-ds-text placeholder-ds-text-subtlest focus:outline-none focus:ring-2 focus:ring-ds-border-focus focus:border-ds-border-focus transition-all duration-200"
+            placeholder="請輸入圖片網址（選填）"
+          />
+        </div>
+
+        <div>
+          <label for="categoryTags" class="block text-sm font-medium text-ds-text mb-ds-075">
+            分類標籤
+          </label>
+          <input
+            id="categoryTags"
+            v-model="categoryTagsInput"
+            type="text"
+            class="w-full px-ds-200 py-ds-100 border border-ds-border rounded-ds-100 bg-ds-surface text-ds-text placeholder-ds-text-subtlest focus:outline-none focus:ring-2 focus:ring-ds-border-focus focus:border-ds-border-focus transition-all duration-200"
+            placeholder="請輸入分類標籤，以逗號分隔（選填，例如：中式,快餐）"
+            @blur="handleCategoryTagsBlur"
+          />
+          <p class="mt-ds-050 text-xs text-ds-text-subtle">多個標籤請以逗號分隔</p>
+          <div v-if="formData.categoryTags && formData.categoryTags.length > 0" class="mt-ds-100 flex flex-wrap gap-ds-050">
+            <span
+              v-for="(tag, index) in formData.categoryTags"
+              :key="index"
+              class="inline-flex items-center gap-ds-050 px-ds-100 py-ds-025 bg-ds-background-neutral rounded-ds-050 text-xs text-ds-text"
+            >
+              {{ tag }}
+              <button
+                type="button"
+                @click="removeCategoryTag(index)"
+                class="text-ds-text-subtle hover:text-ds-text-accent-red transition-colors"
+              >
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <label for="sortOrder" class="block text-sm font-medium text-ds-text mb-ds-075">
+            排序順序
+          </label>
+          <input
+            id="sortOrder"
+            v-model.number="formData.sortOrder"
+            type="number"
+            min="0"
+            class="w-full px-ds-200 py-ds-100 border border-ds-border rounded-ds-100 bg-ds-surface text-ds-text placeholder-ds-text-subtlest focus:outline-none focus:ring-2 focus:ring-ds-border-focus focus:border-ds-border-focus transition-all duration-200"
+            placeholder="請輸入排序順序（數字越小越前面，預設為 0）"
+          />
+          <p class="mt-ds-050 text-xs text-ds-text-subtle">數字越小排序越前面</p>
+        </div>
+
         <div v-if="store">
           <label class="flex items-center cursor-pointer group">
             <input
@@ -134,11 +195,36 @@ const formData = reactive<CreateStoreDto & { isActive?: boolean }>({
   name: '',
   contact: '',
   notes: '',
+  imageUrl: '',
+  categoryTags: [],
+  sortOrder: 0,
   isActive: true,
 })
 
+const categoryTagsInput = ref('')
+
 const loading = ref(false)
 const error = ref('')
+
+// 處理分類標籤輸入
+function handleCategoryTagsBlur() {
+  if (categoryTagsInput.value.trim()) {
+    formData.categoryTags = categoryTagsInput.value
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter((tag) => tag.length > 0)
+  } else {
+    formData.categoryTags = []
+  }
+}
+
+// 移除分類標籤
+function removeCategoryTag(index: number) {
+  if (formData.categoryTags) {
+    formData.categoryTags.splice(index, 1)
+    categoryTagsInput.value = formData.categoryTags.join(', ')
+  }
+}
 
 // 監聽 store prop 變化，初始化表單資料
 watch(
@@ -148,12 +234,20 @@ watch(
       formData.name = store.name
       formData.contact = store.contact || ''
       formData.notes = store.notes || ''
+      formData.imageUrl = store.imageUrl || ''
+      formData.categoryTags = store.categoryTags || []
+      formData.sortOrder = store.sortOrder ?? 0
       formData.isActive = store.isActive
+      categoryTagsInput.value = store.categoryTags ? store.categoryTags.join(', ') : ''
     } else {
       formData.name = ''
       formData.contact = ''
       formData.notes = ''
+      formData.imageUrl = ''
+      formData.categoryTags = []
+      formData.sortOrder = 0
       formData.isActive = true
+      categoryTagsInput.value = ''
     }
     error.value = ''
   },
@@ -172,19 +266,29 @@ async function handleSubmit() {
   try {
     if (props.store) {
       // 更新店家
+      // 先處理分類標籤
+      handleCategoryTagsBlur()
       const updateData: UpdateStoreDto = {
         name: formData.name.trim(),
         contact: formData.contact?.trim() || undefined,
         notes: formData.notes?.trim() || undefined,
+        imageUrl: formData.imageUrl?.trim() || undefined,
+        categoryTags: formData.categoryTags && formData.categoryTags.length > 0 ? formData.categoryTags : undefined,
+        sortOrder: formData.sortOrder,
         isActive: formData.isActive,
       }
       await storesStore.updateStore(props.store.id, updateData)
     } else {
       // 新增店家
+      // 先處理分類標籤
+      handleCategoryTagsBlur()
       const createData: CreateStoreDto = {
         name: formData.name.trim(),
         contact: formData.contact?.trim() || undefined,
         notes: formData.notes?.trim() || undefined,
+        imageUrl: formData.imageUrl?.trim() || undefined,
+        categoryTags: formData.categoryTags && formData.categoryTags.length > 0 ? formData.categoryTags : undefined,
+        sortOrder: formData.sortOrder,
         isActive: formData.isActive,
       }
       await storesStore.createStore(createData)

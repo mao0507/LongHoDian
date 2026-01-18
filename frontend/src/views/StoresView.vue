@@ -40,8 +40,18 @@
           !store.isActive && 'opacity-60',
         ]"
       >
-        <!-- 店家狀態標籤 -->
-        <div class="flex justify-between items-start mb-ds-300">
+        <!-- 店家圖片 -->
+        <div v-if="store.imageUrl" class="mb-ds-200 rounded-ds-100 overflow-hidden">
+          <img
+            :src="store.imageUrl"
+            :alt="store.name"
+            class="w-full h-48 object-cover hover:scale-105 transition-transform duration-200"
+            @error="(e) => { (e.target as HTMLImageElement).style.display = 'none' }"
+          />
+        </div>
+
+        <!-- 店家狀態標籤和分類標籤 -->
+        <div class="flex justify-between items-start mb-ds-200 flex-wrap gap-ds-075">
           <span
             :class="[
               'inline-flex items-center px-ds-150 py-ds-050 rounded-full text-xs font-medium',
@@ -50,14 +60,23 @@
           >
             {{ store.isActive ? '啟用' : '停用' }}
           </span>
+          <div v-if="store.categoryTags && store.categoryTags.length > 0" class="flex flex-wrap gap-ds-050">
+            <span
+              v-for="(tag, index) in store.categoryTags"
+              :key="index"
+              class="inline-flex items-center px-ds-100 py-ds-025 bg-ds-background-information rounded-ds-050 text-xs text-ds-text-accent-blue"
+            >
+              {{ tag }}
+            </span>
+          </div>
         </div>
 
         <!-- 店家資訊 -->
         <h3 class="text-lg font-semibold text-ds-text mb-ds-150">{{ store.name }}</h3>
-        <div v-if="store.contact" class="text-sm text-ds-text-subtle mb-ds-150">
+        <div v-if="store.contact" class="text-sm text-ds-text-subtle mb-ds-100">
           <span class="font-medium">聯絡方式：</span>{{ store.contact }}
         </div>
-        <div v-if="store.notes" class="text-sm text-ds-text-subtle mb-ds-300">
+        <div v-if="store.notes" class="text-sm text-ds-text-subtle mb-ds-200 line-clamp-2">
           <span class="font-medium">備註：</span>{{ store.notes }}
         </div>
 

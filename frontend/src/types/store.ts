@@ -3,6 +3,9 @@ export interface Store {
   name: string
   contact: string | null
   notes: string | null
+  imageUrl: string | null
+  categoryTags: string[] | null
+  sortOrder: number
   isActive: boolean
   organizerId: number
   createdAt: string
@@ -13,6 +16,9 @@ export interface CreateStoreDto {
   name: string
   contact?: string
   notes?: string
+  imageUrl?: string
+  categoryTags?: string[]
+  sortOrder?: number
   isActive?: boolean
 }
 
@@ -20,5 +26,8 @@ export interface UpdateStoreDto {
   name?: string
   contact?: string
   notes?: string
+  imageUrl?: string
+  categoryTags?: string[]
+  sortOrder?: number
   isActive?: boolean
 }
