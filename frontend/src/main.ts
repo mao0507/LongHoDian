@@ -3,6 +3,8 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import { useAuthStore } from './stores/auth'
+// Atlassian Design System CSS Reset
+import '@atlaskit/css-reset/dist/bundle.css'
 import './assets/main.css'
 
 const app = createApp(App)

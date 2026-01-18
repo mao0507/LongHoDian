@@ -5,6 +5,7 @@ import type { User } from '@/types/auth'
 
 interface LoginRequest {
   username: string
+  password: string
 }
 
 interface RegisterRequest {

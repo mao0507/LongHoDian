@@ -1,58 +1,47 @@
 <template>
-  <div class="min-h-screen bg-gray-50 p-4">
-    <div class="max-w-4xl mx-auto">
-      <div class="bg-white rounded-lg shadow-md p-6">
-        <h1 class="text-2xl font-bold text-gray-900 mb-6">個人資料</h1>
+  <div class="max-w-4xl mx-auto">
+    <div class="bg-ds-surface rounded-ds-200 shadow-ds-raised p-ds-300">
+      <h1 class="text-2xl font-semibold text-ds-text mb-ds-400">個人資料</h1>
 
-        <div v-if="loading" class="text-center py-8">
-          <div class="text-gray-600">載入中...</div>
+      <div v-if="loading" class="text-center py-ds-800">
+        <div class="text-ds-text-subtle">載入中...</div>
+      </div>
+
+      <div v-else-if="user" class="space-y-ds-400">
+        <div>
+          <label class="block text-sm font-medium text-ds-text mb-ds-050">使用者名稱</label>
+          <div class="px-ds-200 py-ds-100 bg-ds-background-neutral-subtle border border-ds-border rounded-ds-100 text-ds-text">
+            {{ user.username }}
+          </div>
         </div>
 
-        <div v-else-if="user" class="space-y-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">使用者名稱</label>
-            <div class="px-3 py-2 bg-gray-50 border border-gray-300 rounded-md">
-              {{ user.username }}
-            </div>
+        <div>
+          <label class="block text-sm font-medium text-ds-text mb-ds-050">暱稱</label>
+          <div class="px-ds-200 py-ds-100 bg-ds-background-neutral-subtle border border-ds-border rounded-ds-100 text-ds-text">
+            {{ user.nickname || user.username }}
           </div>
+        </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">暱稱</label>
-            <div class="px-3 py-2 bg-gray-50 border border-gray-300 rounded-md">
-              {{ user.nickname || user.username }}
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">角色</label>
-            <div class="px-3 py-2 bg-gray-50 border border-gray-300 rounded-md">
-              <span
-                :class="[
-                  'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
-                  user.role === 'organizer'
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-blue-100 text-blue-800',
-                ]"
-              >
-                {{ user.role === 'organizer' ? '召集人' : '一般用戶' }}
-              </span>
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">註冊時間</label>
-            <div class="px-3 py-2 bg-gray-50 border border-gray-300 rounded-md">
-              {{ formatDate(user.createdAt) }}
-            </div>
-          </div>
-
-          <div class="pt-4 border-t">
-            <button
-              @click="handleLogout"
-              class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+        <div>
+          <label class="block text-sm font-medium text-ds-text mb-ds-050">角色</label>
+          <div class="px-ds-200 py-ds-100 bg-ds-background-neutral-subtle border border-ds-border rounded-ds-100 text-ds-text">
+            <span
+              :class="[
+                'inline-flex items-center px-ds-150 py-ds-050 rounded-full text-xs font-medium',
+                user.role === 'organizer'
+                  ? 'bg-ds-background-success text-ds-text-accent-green'
+                  : 'bg-ds-background-information text-ds-text-accent-blue',
+              ]"
             >
-              登出
-            </button>
+              {{ user.role === 'organizer' ? '召集人' : '一般用戶' }}
+            </span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-sm font-medium text-ds-text mb-ds-050">註冊時間</label>
+          <div class="px-ds-200 py-ds-100 bg-ds-background-neutral-subtle border border-ds-border rounded-ds-100 text-ds-text">
+            {{ formatDate(user.createdAt) }}
           </div>
         </div>
       </div>

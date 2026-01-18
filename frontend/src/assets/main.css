@@ -1,3 +1,154 @@
+/* Atlassian Design System CSS Reset */
+@import '@atlaskit/css-reset/dist/bundle.css';
+
+/* Atlassian Design System Design Tokens */
+:root {
+  /* Colors - Background */
+  --ds-background-neutral: #091e420f;
+  --ds-background-neutral-subtle: #091e4208;
+  --ds-background-neutral-bold: #091e4224;
+  --ds-background-selected: #e3fcef;
+  --ds-background-selected-bold: #abf5d1;
+  --ds-background-brand-subtlest: #e3fcef;
+  --ds-background-brand-bold: #0065ff;
+  --ds-background-brand-boldest: #0052cc;
+  --ds-background-danger: #ffe5e5;
+  --ds-background-danger-bold: #ff8f8f;
+  --ds-background-warning: #fffae5;
+  --ds-background-warning-bold: #ffe380;
+  --ds-background-success: #e3fcef;
+  --ds-background-success-bold: #abf5d1;
+  --ds-background-discovery: #f3f0ff;
+  --ds-background-discovery-bold: #b8acf6;
+  --ds-background-information: #deebff;
+  --ds-background-information-bold: #4c9aff;
+  --ds-surface: #ffffff;
+  --ds-surface-raised: #f4f5f7;
+  --ds-surface-overlay: #ffffff;
+  --ds-surface-sunken: #f4f5f7;
+
+  /* Colors - Text */
+  --ds-text: #172b4d;
+  --ds-text-subtlest: #6b778c;
+  --ds-text-subtle: #5e6c84;
+  --ds-text-accent-red: #de350b;
+  --ds-text-accent-red-bolder: #bf2600;
+  --ds-text-accent-orange: #ff5630;
+  --ds-text-accent-orange-bolder: #bf2600;
+  --ds-text-accent-yellow: #ffab00;
+  --ds-text-accent-yellow-bolder: #ff991f;
+  --ds-text-accent-green: #00875a;
+  --ds-text-accent-green-bolder: #006644;
+  --ds-text-accent-teal: #00a3bf;
+  --ds-text-accent-teal-bolder: #008da6;
+  --ds-text-accent-blue: #0065ff;
+  --ds-text-accent-blue-bolder: #0052cc;
+  --ds-text-accent-purple: #5243aa;
+  --ds-text-accent-purple-bolder: #403294;
+  --ds-text-accent-magenta: #cd519d;
+  --ds-text-accent-magenta-bolder: #ae4787;
+  --ds-text-link: #0052cc;
+  --ds-text-link-pressed: #0065ff;
+  --ds-text-disabled: #a5adba;
+  --ds-text-inverse: #ffffff;
+
+  /* Colors - Border */
+  --ds-border: #091e4221;
+  --ds-border-bold: #091e424f;
+  --ds-border-focus: #0052cc;
+  --ds-border-error: #de350b;
+  --ds-border-selected: #0065ff;
+  --ds-border-disabled: #091e4208;
+  --ds-border-brand: #0052cc;
+
+  /* Spacing */
+  --ds-space-0: 0px;
+  --ds-space-025: 2px;
+  --ds-space-050: 4px;
+  --ds-space-075: 6px;
+  --ds-space-100: 8px;
+  --ds-space-150: 12px;
+  --ds-space-200: 16px;
+  --ds-space-250: 20px;
+  --ds-space-300: 24px;
+  --ds-space-400: 32px;
+  --ds-space-500: 40px;
+  --ds-space-600: 48px;
+  --ds-space-800: 64px;
+  --ds-space-1000: 80px;
+
+  /* Font */
+  --ds-font-family-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  --ds-font-family-monospace: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  --ds-font-body: normal 400 14px/1.42857142857143 var(--ds-font-family-sans);
+  --ds-font-heading: normal 600 16px/1.375 var(--ds-font-family-sans);
+  --ds-font-heading-large: normal 600 20px/1.2 var(--ds-font-family-sans);
+  --ds-font-heading-xlarge: normal 600 24px/1.16666666666667 var(--ds-font-family-sans);
+  --ds-font-heading-xxlarge: normal 600 29px/1.10344827586207 var(--ds-font-family-sans);
+
+  /* Border Radius */
+  --ds-border-radius-0: 0px;
+  --ds-border-radius-050: 3px;
+  --ds-border-radius-100: 6px;
+  --ds-border-radius-200: 8px;
+  --ds-border-radius-300: 12px;
+  --ds-border-radius-400: 16px;
+  --ds-border-radius-round: 9999px;
+
+  /* Elevation (Shadows) */
+  --ds-elevation-shadow-surface: none;
+  --ds-elevation-shadow-overlay: 0 1px 1px rgba(9, 30, 66, 0.13), 0 0 1px 1px rgba(9, 30, 66, 0.13);
+  --ds-elevation-shadow-raised: 0 1px 1px rgba(9, 30, 66, 0.13), 0 0 1px 1px rgba(9, 30, 66, 0.13);
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* 自定義動畫 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.2s ease-out;
+}
+
+/* 改善滾動條樣式 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ds-background-neutral-subtle);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ds-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ds-border-bold);
+}
