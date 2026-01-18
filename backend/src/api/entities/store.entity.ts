@@ -25,6 +25,15 @@ export class Store {
   @Column({ type: 'text', nullable: true })
   notes: string
 
+  @Column({ type: 'text', nullable: true })
+  imageUrl: string
+
+  @Column({ type: 'text', nullable: true })
+  categoryTags: string // JSON string array: ["中式", "快餐"]
+
+  @Column({ type: 'int', default: 0 })
+  sortOrder: number
+
   @Column({ default: true })
   isActive: boolean
 

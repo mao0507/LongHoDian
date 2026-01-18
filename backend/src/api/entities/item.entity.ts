@@ -5,9 +5,11 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  OneToMany,
   JoinColumn,
 } from 'typeorm'
 import { Store } from './store.entity'
+import { CustomizationOption } from './customization-option.entity'
 
 @Entity('items')
 export class Item {
@@ -26,6 +28,18 @@ export class Item {
   @Column({ type: 'text', nullable: true })
   notes: string
 
+  @Column({ type: 'text', nullable: true })
+  description: string
+
+  @Column({ type: 'text', nullable: true })
+  imageUrl: string
+
+  @Column({ type: 'int', default: 0 })
+  sortOrder: number
+
+  @Column({ default: false })
+  isRecommended: boolean
+
   @Column({ default: true })
   isActive: boolean
 
@@ -35,6 +49,9 @@ export class Item {
   @ManyToOne(() => Store, (store) => store.items, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'storeId' })
   store: Store
+
+  @OneToMany(() => CustomizationOption, (option) => option.item)
+  customizationOptions: CustomizationOption[]
 
   @CreateDateColumn()
   createdAt: Date

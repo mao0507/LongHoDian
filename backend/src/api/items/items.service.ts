@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { Item } from '../entities/item.entity'
 import { Store } from '../entities/store.entity'
+import { CustomizationOption } from '../entities/customization-option.entity'
 import { User } from '../entities/user.entity'
 import { CreateItemDto, UpdateItemDto } from '../dto/item.dto'
 
@@ -13,6 +14,8 @@ export class ItemsService {
     private itemRepository: Repository<Item>,
     @InjectRepository(Store)
     private storeRepository: Repository<Store>,
+    @InjectRepository(CustomizationOption)
+    private customizationOptionRepository: Repository<CustomizationOption>,
   ) {}
 
   /**
@@ -28,12 +31,43 @@ export class ItemsService {
       throw new NotFoundException('店家不存在或您沒有權限')
     }
 
+    const { customizationOptions, ...itemData } = createItemDto
+
     const item = this.itemRepository.create({
-      ...createItemDto,
+      ...itemData,
       storeId: store.id,
     })
 
-    return this.itemRepository.save(item)
+    const savedItem = await this.itemRepository.save(item)
+
+    // 處理客製化選項
+    if (customizationOptions && customizationOptions.length > 0) {
+      const options = customizationOptions.map((opt) =>
+        this.customizationOptionRepository.create({
+          itemId: savedItem.id,
+          optionName: opt.optionName,
+          optionValues: JSON.stringify(opt.optionValues),
+          defaultValue: opt.defaultValue,
+          template: opt.template,
+        }),
+      )
+      await this.customizationOptionRepository.save(options)
+    }
+
+    return this.findOne(savedItem.id, organizerId)
+  }
+
+  /**
+   * 轉換客製化選項的 optionValues 從 JSON string 到陣列
+   */
+  private transformItem(item: Item): Item {
+    if (item.customizationOptions) {
+      item.customizationOptions = item.customizationOptions.map((opt) => ({
+        ...opt,
+        optionValues: typeof opt.optionValues === 'string' ? JSON.parse(opt.optionValues) : opt.optionValues,
+      })) as any
+    }
+    return item
   }
 
   /**
@@ -42,6 +76,7 @@ export class ItemsService {
   async findAll(organizerId: number, storeId?: number): Promise<Item[]> {
     const queryBuilder = this.itemRepository
       .createQueryBuilder('item')
+      .leftJoinAndSelect('item.customizationOptions', 'customizationOptions')
       .innerJoin('item.store', 'store')
       .where('store.organizerId = :organizerId', { organizerId })
 
@@ -49,7 +84,8 @@ export class ItemsService {
       queryBuilder.andWhere('item.storeId = :storeId', { storeId })
     }
 
-    return queryBuilder.orderBy('item.createdAt', 'DESC').getMany()
+    const items = await queryBuilder.orderBy('item.sortOrder', 'ASC').addOrderBy('item.createdAt', 'DESC').getMany()
+    return items.map((item) => this.transformItem(item))
   }
 
   /**
@@ -58,6 +94,7 @@ export class ItemsService {
   async findOne(id: number, organizerId: number): Promise<Item> {
     const item = await this.itemRepository
       .createQueryBuilder('item')
+      .leftJoinAndSelect('item.customizationOptions', 'customizationOptions')
       .innerJoin('item.store', 'store')
       .where('item.id = :id', { id })
       .andWhere('store.organizerId = :organizerId', { organizerId })
@@ -67,7 +104,7 @@ export class ItemsService {
       throw new NotFoundException('品項不存在或您沒有權限')
     }
 
-    return item
+    return this.transformItem(item)
   }
 
   /**
@@ -87,9 +124,31 @@ export class ItemsService {
       }
     }
 
-    Object.assign(item, updateItemDto)
+    const { customizationOptions, ...itemData } = updateItemDto
 
-    return this.itemRepository.save(item)
+    Object.assign(item, itemData)
+
+    const savedItem = await this.itemRepository.save(item)
+
+    // 處理客製化選項：先刪除所有現有選項，再新增
+    if (customizationOptions !== undefined) {
+      await this.customizationOptionRepository.delete({ itemId: id })
+
+      if (customizationOptions.length > 0) {
+        const options = customizationOptions.map((opt) =>
+          this.customizationOptionRepository.create({
+            itemId: id,
+            optionName: opt.optionName,
+            optionValues: JSON.stringify(opt.optionValues),
+            defaultValue: opt.defaultValue,
+            template: opt.template,
+          }),
+        )
+        await this.customizationOptionRepository.save(options)
+      }
+    }
+
+    return this.findOne(id, organizerId)
   }
 
   /**
@@ -106,6 +165,7 @@ export class ItemsService {
   async toggleActive(id: number, organizerId: number): Promise<Item> {
     const item = await this.findOne(id, organizerId)
     item.isActive = !item.isActive
-    return this.itemRepository.save(item)
+    const savedItem = await this.itemRepository.save(item)
+    return this.findOne(id, organizerId)
   }
 }
