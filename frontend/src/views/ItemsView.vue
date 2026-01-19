@@ -1,18 +1,48 @@
 <template>
   <div class="max-w-7xl mx-auto">
     <!-- 頁面標題和操作按鈕 -->
-    <div class="flex justify-between items-center mb-ds-400">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-ds-200 mb-ds-400">
       <h1 class="text-2xl font-semibold text-ds-text">品項管理</h1>
-      <button
-        @click="showCreateModal = true"
-        :disabled="stores.length === 0"
-        class="flex items-center gap-ds-075 px-ds-200 py-ds-100 bg-ds-background-brand text-ds-text-inverse rounded-ds-100 hover:bg-ds-background-brand-boldest transition-colors focus:outline-none focus:ring-2 focus:ring-ds-border-focus focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-        <span>新增品項</span>
-      </button>
+      <div class="flex flex-wrap gap-ds-150">
+        <button
+          @click="handleDownloadTemplate"
+          :disabled="!authStore.isOrganizer"
+          class="flex items-center gap-ds-075 px-ds-200 py-ds-100 border border-ds-border bg-ds-surface text-ds-text rounded-ds-100 hover:bg-ds-background-neutral transition-colors focus:outline-none focus:ring-2 focus:ring-ds-border-focus focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <span>下載範本</span>
+        </button>
+        <label
+          :class="[
+            'flex items-center gap-ds-075 px-ds-200 py-ds-100 border border-ds-border bg-ds-surface text-ds-text rounded-ds-100 hover:bg-ds-background-neutral transition-colors focus:outline-none focus:ring-2 focus:ring-ds-border-focus focus:ring-offset-2 cursor-pointer',
+            (!authStore.isOrganizer || stores.length === 0) && 'opacity-50 cursor-not-allowed',
+          ]"
+        >
+          <input
+            type="file"
+            accept=".csv"
+            @change="handleFileSelect"
+            :disabled="!authStore.isOrganizer || stores.length === 0"
+            class="hidden"
+          />
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+          </svg>
+          <span>批量匯入</span>
+        </label>
+        <button
+          @click="showCreateModal = true"
+          :disabled="stores.length === 0"
+          class="flex items-center gap-ds-075 px-ds-200 py-ds-100 bg-ds-background-brand text-ds-text-inverse rounded-ds-100 hover:bg-ds-background-brand-boldest transition-colors focus:outline-none focus:ring-2 focus:ring-ds-border-focus focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>新增品項</span>
+        </button>
+      </div>
     </div>
 
     <!-- 店家篩選 -->
@@ -158,6 +188,62 @@
       @close="closeModal"
       @saved="handleItemSaved"
     />
+
+    <!-- 匯入結果 Modal -->
+    <div
+      v-if="importResult"
+      class="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center p-ds-300 z-50 animate-fadeIn"
+      @click.self="importResult = null"
+    >
+      <div class="bg-ds-surface rounded-ds-300 shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col transform transition-all duration-300 animate-scaleIn">
+        <div class="flex items-center justify-between p-ds-400 pb-ds-200 border-b border-ds-border flex-shrink-0">
+          <h2 class="text-xl font-semibold text-ds-text">匯入結果</h2>
+          <button
+            @click="importResult = null"
+            class="text-ds-text-subtle hover:text-ds-text hover:bg-ds-background-neutral rounded-ds-050 p-ds-075 transition-colors"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="flex-1 overflow-y-auto px-ds-400 py-ds-300">
+          <div class="space-y-ds-300">
+            <div class="grid grid-cols-2 gap-ds-200">
+              <div class="p-ds-200 bg-ds-background-success rounded-ds-100">
+                <div class="text-sm text-ds-text-subtle mb-ds-050">成功</div>
+                <div class="text-2xl font-bold text-ds-text-accent-green">{{ importResult.success }}</div>
+              </div>
+              <div class="p-ds-200 bg-ds-background-danger rounded-ds-100">
+                <div class="text-sm text-ds-text-subtle mb-ds-050">失敗</div>
+                <div class="text-2xl font-bold text-ds-text-accent-red">{{ importResult.failed }}</div>
+              </div>
+            </div>
+            <div v-if="importResult.errors && importResult.errors.length > 0" class="mt-ds-300">
+              <h3 class="text-sm font-medium text-ds-text mb-ds-150">錯誤詳情：</h3>
+              <div class="max-h-60 overflow-y-auto space-y-ds-100">
+                <div
+                  v-for="(error, index) in importResult.errors"
+                  :key="index"
+                  class="p-ds-150 bg-ds-background-danger-subtle border border-ds-border-error rounded-ds-100 text-sm"
+                >
+                  <span class="font-medium">第 {{ error.row }} 行：</span>
+                  <span class="text-ds-text-accent-red">{{ error.message }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="flex gap-ds-150 p-ds-400 pt-ds-300 border-t border-ds-border flex-shrink-0">
+          <button
+            @click="importResult = null; itemsStore.fetchItems(selectedStoreId)"
+            class="flex-1 bg-ds-background-brand text-ds-text-inverse px-ds-300 py-ds-100 rounded-ds-100 hover:bg-ds-background-brand-boldest focus:outline-none focus:ring-2 focus:ring-ds-border-focus focus:ring-offset-2 font-medium transition-all duration-200"
+          >
+            確定
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -179,6 +265,11 @@ const storesStore = useStoresStore()
 const showCreateModal = ref(false)
 const editingItem = ref<Item | null>(null)
 const selectedStoreId = ref<number | undefined>()
+const importResult = ref<{
+  success: number
+  failed: number
+  errors: Array<{ row: number; message: string }>
+} | null>(null)
 
 // 檢查是否為召集人
 if (!authStore.isOrganizer) {
@@ -231,5 +322,36 @@ function formatPrice(price: number): string {
 function getStoreName(storeId: number): string {
   const store = stores.value.find((s) => s.id === storeId)
   return store?.name || '未知店家'
+}
+
+async function handleDownloadTemplate() {
+  try {
+    await itemsStore.downloadTemplate()
+  } catch (err: any) {
+    alert('下載範本失敗：' + (err.response?.data?.message || err.message))
+  }
+}
+
+async function handleFileSelect(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (!file) return
+
+  if (!file.name.endsWith('.csv')) {
+    alert('請選擇 CSV 檔案')
+    target.value = ''
+    return
+  }
+
+  try {
+    const result = await itemsStore.importItemsFromCSV(file)
+    importResult.value = result
+    // 重新載入品項列表
+    await itemsStore.fetchItems(selectedStoreId.value)
+  } catch (err: any) {
+    alert('匯入失敗：' + (err.response?.data?.message || err.message))
+  } finally {
+    target.value = ''
+  }
 }
 </script>

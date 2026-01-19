@@ -39,6 +39,30 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/ItemsView.vue'),
     meta: { requiresAuth: true, requiresOrganizer: true },
   },
+  {
+    path: '/orders/create',
+    name: 'create-order',
+    component: () => import('@/views/CreateOrderView.vue'),
+    meta: { requiresAuth: true, requiresOrganizer: true },
+  },
+  {
+    path: '/order/:token',
+    name: 'order',
+    component: () => import('@/views/OrderView.vue'),
+    meta: { isPublic: true }, // 匿名用戶可訪問
+  },
+  {
+    path: '/orders',
+    name: 'orders',
+    component: () => import('@/views/OrdersView.vue'),
+    meta: { requiresAuth: true, requiresOrganizer: true },
+  },
+  {
+    path: '/orders/history',
+    name: 'orders-history',
+    component: () => import('@/views/HistoryOrdersView.vue'),
+    meta: { requiresAuth: true, requiresOrganizer: true },
+  },
 ]
 
 const router = createRouter({
