@@ -5,9 +5,10 @@ import { ItemsController } from './items.controller'
 import { Item } from '../entities/item.entity'
 import { Store } from '../entities/store.entity'
 import { CustomizationOption } from '../entities/customization-option.entity'
+import { Order } from '../entities/order.entity'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Item, Store, CustomizationOption])],
+  imports: [TypeOrmModule.forFeature([Item, Store, CustomizationOption, Order])],
   controllers: [ItemsController],
   providers: [ItemsService],
   exports: [ItemsService],
