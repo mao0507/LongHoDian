@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common'
+import { Injectable, NotFoundException, BadRequestException, Inject, forwardRef } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import * as Papa from 'papaparse'
@@ -8,6 +8,7 @@ import { Store } from '../entities/store.entity'
 import { Item } from '../entities/item.entity'
 import { CreateOrderDto, SubmitOrderDto, UpdateOrderDto } from '../dto/order.dto'
 import { randomBytes } from 'crypto'
+import { NotificationsSchedulerService } from '../notifications/notifications-scheduler.service'
 
 @Injectable()
 export class OrdersService {
@@ -20,6 +21,8 @@ export class OrdersService {
     private storeRepository: Repository<Store>,
     @InjectRepository(Item)
     private itemRepository: Repository<Item>,
+    @Inject(forwardRef(() => NotificationsSchedulerService))
+    private notificationsSchedulerService: NotificationsSchedulerService,
   ) {}
 
   /**
@@ -54,7 +57,16 @@ export class OrdersService {
       status: OrderStatus.OPEN,
     })
 
-    return this.orderRepository.save(order)
+    const savedOrder = await this.orderRepository.save(order)
+
+    // 發送訂單建立通知
+    try {
+      await this.notificationsSchedulerService.sendOrderStartedNotification(savedOrder)
+    } catch (error) {
+      console.error('發送訂單建立通知失敗:', error)
+    }
+
+    return savedOrder
   }
 
   /**
@@ -179,6 +191,11 @@ export class OrdersService {
       throw new BadRequestException('訂單已截止，無法點餐')
     }
 
+    // 檢查店家 ID
+    if (!order.storeId) {
+      throw new BadRequestException('訂單缺少店家資訊，無法點餐')
+    }
+
     // 刪除該參與者的舊訂單項目
     await this.orderItemRepository.delete({
       orderId: order.id,
@@ -255,6 +272,7 @@ export class OrdersService {
       where: {
         status: OrderStatus.OPEN,
       },
+      relations: ['items'],
     })
 
     const ordersToClose = expiredOrders.filter((order) => order.deadline <= now)
@@ -262,8 +280,16 @@ export class OrdersService {
     if (ordersToClose.length > 0) {
       for (const order of ordersToClose) {
         order.status = OrderStatus.CLOSED
+        await this.orderRepository.save(order)
+
+        // 發送訂單關閉通知
+        try {
+          const itemCount = order.items?.length || 0
+          await this.notificationsSchedulerService.sendOrderSummaryNotification(order, itemCount)
+        } catch (error) {
+          console.error('發送訂單關閉通知失敗:', error)
+        }
       }
-      await this.orderRepository.save(ordersToClose)
       console.log(`自動關閉了 ${ordersToClose.length} 個過期訂單`)
     }
   }
@@ -296,7 +322,7 @@ export class OrdersService {
       }
 
       return [
-        item.participantName,
+        item.participantName || '未知參與者',
         item.item?.name || '未知品項',
         item.quantity.toString(),
         (item.item?.price || 0).toFixed(2),
@@ -325,7 +351,7 @@ export class OrdersService {
     }
 
     // 動態導入 jsPDF（因為它是 CommonJS 模組）
-    const { jsPDF } = await import('jspdf')
+    const jsPDF = (await import('jspdf')).default
     await import('jspdf-autotable')
 
     const doc = new jsPDF()
@@ -357,7 +383,7 @@ export class OrdersService {
       }
 
       return [
-        item.participantName,
+        item.participantName || '未知參與者',
         item.item?.name || '未知品項',
         item.quantity.toString(),
         `NT$ ${(item.item?.price || 0).toFixed(2)}`,

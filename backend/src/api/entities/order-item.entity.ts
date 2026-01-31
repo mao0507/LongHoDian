@@ -18,8 +18,8 @@ export class OrderItem {
   @Column()
   orderId: number
 
-  @Column({ length: 100 })
-  participantName: string // 參與者姓名
+  @Column({ length: 100, nullable: true })
+  participantName: string | null // 參與者姓名
 
   @Column()
   itemId: number // 品項 ID
@@ -33,7 +33,7 @@ export class OrderItem {
   @Column({ type: 'text', nullable: true })
   notes: string // 備註
 
-  @Column('decimal', { precision: 10, scale: 2 })
+  @Column('decimal', { precision: 10, scale: 2, default: 0 })
   subtotal: number // 小計（品項價格 * 數量）
 
   @ManyToOne(() => Order, (order) => order.items, { onDelete: 'CASCADE' })

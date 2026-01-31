@@ -23,17 +23,17 @@ export class Order {
   @PrimaryGeneratedColumn()
   id: number
 
-  @Column({ length: 100 })
+  @Column({ length: 100, default: '' })
   name: string // 訂單名稱
 
-  @Column({ type: 'datetime' })
+  @Column({ type: 'datetime', default: () => "datetime('now', '+1 day')" })
   deadline: Date // 截止時間
 
-  @Column()
-  storeId: number // 指定店家
+  @Column({ nullable: true })
+  storeId: number | null // 指定店家
 
-  @Column({ unique: true, length: 64 })
-  shareToken: string // 分享 Token（唯一識別碼）
+  @Column({ unique: true, length: 64, nullable: true })
+  shareToken: string | null // 分享 Token（唯一識別碼）
 
   @Column({ type: 'varchar', length: 20, default: OrderStatus.OPEN })
   status: OrderStatus // 訂單狀態

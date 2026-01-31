@@ -63,6 +63,12 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@/views/HistoryOrdersView.vue'),
     meta: { requiresAuth: true, requiresOrganizer: true },
   },
+  {
+    path: '/settings/notifications',
+    name: 'notification-settings',
+    component: () => import('@/views/NotificationSettingsView.vue'),
+    meta: { requiresAuth: true },
+  },
 ]
 
 const router = createRouter({

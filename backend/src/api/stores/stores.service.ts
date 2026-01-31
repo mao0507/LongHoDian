@@ -27,7 +27,7 @@ export class StoresService {
     const saved = await this.storeRepository.save(store)
     // 解析 categoryTags 以便返回
     if (saved.categoryTags) {
-      saved.categoryTags = JSON.parse(saved.categoryTags)
+      saved.categoryTags = JSON.parse(saved.categoryTags) as any
     }
     return saved
   }
@@ -44,9 +44,9 @@ export class StoresService {
     return stores.map((store) => {
       if (store.categoryTags && typeof store.categoryTags === 'string') {
         try {
-          store.categoryTags = JSON.parse(store.categoryTags)
+          store.categoryTags = JSON.parse(store.categoryTags) as any
         } catch {
-          store.categoryTags = []
+          store.categoryTags = [] as any
         }
       }
       return store
@@ -68,9 +68,9 @@ export class StoresService {
     // 解析 categoryTags
     if (store.categoryTags && typeof store.categoryTags === 'string') {
       try {
-        store.categoryTags = JSON.parse(store.categoryTags)
+        store.categoryTags = JSON.parse(store.categoryTags) as any
       } catch {
-        store.categoryTags = []
+        store.categoryTags = [] as any
       }
     }
 
@@ -112,9 +112,9 @@ export class StoresService {
     // 解析 categoryTags 以便返回
     if (saved.categoryTags && typeof saved.categoryTags === 'string') {
       try {
-        saved.categoryTags = JSON.parse(saved.categoryTags)
+        saved.categoryTags = JSON.parse(saved.categoryTags) as any
       } catch {
-        saved.categoryTags = []
+        saved.categoryTags = [] as any
       }
     }
     return saved

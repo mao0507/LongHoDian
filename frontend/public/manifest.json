@@ -1,0 +1,41 @@
+{
+  "name": "午餐點餐平台",
+  "short_name": "午餐點餐",
+  "description": "公司內部午餐點餐協作平台",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0052CC",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "zh-TW",
+  "categories": ["food", "productivity", "business"],
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "開始點餐",
+      "short_name": "開始點餐",
+      "description": "建立新的點餐訂單",
+      "url": "/orders/create"
+    },
+    {
+      "name": "訂單管理",
+      "short_name": "訂單",
+      "description": "管理現有訂單",
+      "url": "/orders"
+    }
+  ]
+}
