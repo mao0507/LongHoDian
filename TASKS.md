@@ -109,28 +109,28 @@
 - [x] 實作 PWA 功能（可選：離線使用、安裝到桌面）
 
 ### 10. API 開發
-- [ ] 設計 RESTful API 規格文件
-- [ ] 實作用戶認證相關 API（註冊、登入、登出）
-- [ ] 實作店家管理相關 API（CRUD、啟用/停用）
-- [ ] 實作品項管理相關 API（CRUD、啟用/停用、客製化選項、批量匯入）
-- [ ] 實作點餐訂單相關 API（建立訂單、產生 Token、產生 QRCode、重新產生 Token）
-- [ ] 實作匿名點餐相關 API（透過 Token 取得訂單資訊、提交點餐、修改訂單、取消訂單）
-- [ ] 實作訂單管理相關 API（列表、詳細資訊、結束訂單、統計、匯出）
-- [ ] 實作歷史訂單相關 API（列表、搜尋、詳細資訊）
-- [ ] 實作 API 錯誤處理
-- [ ] 實作 API 請求驗證與資料驗證
-- [ ] 設定 API 速率限制
+- [x] 設計 RESTful API 規格文件 - Swagger/OpenAPI 文件位於 `/api/docs`
+- [x] 實作用戶認證相關 API（註冊、登入、登出）
+- [x] 實作店家管理相關 API（CRUD、啟用/停用）
+- [x] 實作品項管理相關 API（CRUD、啟用/停用、客製化選項、批量匯入）
+- [x] 實作點餐訂單相關 API（建立訂單、產生 Token、產生 QRCode、重新產生 Token）
+- [x] 實作匿名點餐相關 API（透過 Token 取得訂單資訊、提交點餐、修改訂單、取消訂單）
+- [x] 實作訂單管理相關 API（列表、詳細資訊、結束訂單、統計、匯出）
+- [x] 實作歷史訂單相關 API（列表、搜尋、詳細資訊）
+- [x] 實作 API 錯誤處理 - 全域異常過濾器 `AllExceptionsFilter`
+- [x] 實作 API 請求驗證與資料驗證 - 使用 Zod Schema 驗證
+- [x] 設定 API 速率限制 - 使用 `@nestjs/throttler`（每分鐘 60 次、每小時 1000 次）
 
 ### 11. 資料庫設計
-- [ ] 設計用戶資料表（Users：id, username, nickname, password, role）
-- [ ] 設計店家資料表（Stores：id, name, contact, notes, image_url, category_tags, sort_order, is_active）
-- [ ] 設計品項資料表（Items：id, store_id, name, price, description, image_url, category, sort_order, is_recommended, is_active）
-- [ ] 設計客製化選項資料表（CustomizationOptions：id, item_id, option_name, option_values, default_value, template）
-- [ ] 設計點餐訂單資料表（Orders：id, name, deadline, store_id, share_token, status, created_at）
-- [ ] 設計點餐項目資料表（OrderItems：id, order_id, participant_name, item_id, quantity, customization, notes, subtotal）
-- [ ] 設計關聯表與外鍵約束（Items -> Stores, OrderItems -> Orders, OrderItems -> Items, CustomizationOptions -> Items）
-- [ ] 設計資料庫索引優化（share_token, order_id, store_id, item_id）
-- [ ] 實作資料庫遷移腳本
+- [x] 設計用戶資料表（Users：id, username, nickname, password, role）
+- [x] 設計店家資料表（Stores：id, name, contact, notes, image_url, category_tags, sort_order, is_active）
+- [x] 設計品項資料表（Items：id, store_id, name, price, description, image_url, category, sort_order, is_recommended, is_active）
+- [x] 設計客製化選項資料表（CustomizationOptions：id, item_id, option_name, option_values, default_value, template）
+- [x] 設計點餐訂單資料表（Orders：id, name, deadline, store_id, share_token, status, created_at）
+- [x] 設計點餐項目資料表（OrderItems：id, order_id, participant_name, item_id, quantity, customization, notes, subtotal）
+- [x] 設計關聯表與外鍵約束（Items -> Stores, OrderItems -> Orders, OrderItems -> Items, CustomizationOptions -> Items）
+- [x] 設計資料庫索引優化（share_token, order_id, store_id, item_id）- TypeORM 自動建立索引
+- [ ] 實作資料庫遷移腳本 - 開發環境使用 synchronize，生產環境需手動建立遷移
 
 ### 12. 測試
 - [ ] 撰寫單元測試（前端組件）

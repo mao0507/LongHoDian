@@ -12,6 +12,14 @@ import {
   UsePipes,
   BadRequestException,
 } from '@nestjs/common'
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+  ApiQuery,
+  ApiBody,
+} from '@nestjs/swagger'
 import { Request, Response } from 'express'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { ZodValidationPipe } from '../pipes/zod-validation.pipe'
@@ -38,6 +46,8 @@ interface AuthenticatedRequest extends Request {
   }
 }
 
+@ApiTags('Notifications')
+@ApiBearerAuth('JWT-auth')
 @Controller('notifications')
 @UseGuards(JwtAuthGuard)
 export class NotificationsController {
@@ -48,10 +58,37 @@ export class NotificationsController {
 
   // ==================== 通知記錄 ====================
 
-  /**
-   * 取得通知記錄
-   */
   @Get()
+  @ApiOperation({ summary: '取得通知記錄', description: '取得當前用戶的通知記錄，支援分頁和篩選' })
+  @ApiQuery({ name: 'page', type: 'number', required: false, description: '頁碼（預設 1）' })
+  @ApiQuery({ name: 'limit', type: 'number', required: false, description: '每頁筆數（預設 20）' })
+  @ApiQuery({ name: 'unreadOnly', type: 'boolean', required: false, description: '僅顯示未讀通知' })
+  @ApiResponse({
+    status: 200,
+    description: '成功取得通知記錄',
+    schema: {
+      type: 'object',
+      properties: {
+        notifications: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'number' },
+              type: { type: 'string', enum: ['order_started', 'order_deadline_reminder', 'order_summary_completed'] },
+              channel: { type: 'string', enum: ['web_push', 'line_notify', 'telegram'] },
+              status: { type: 'string', enum: ['pending', 'sent', 'failed', 'read'] },
+              title: { type: 'string' },
+              content: { type: 'string' },
+              createdAt: { type: 'string', format: 'date-time' },
+            },
+          },
+        },
+        total: { type: 'number' },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: '未授權' })
   async getNotifications(
     @Req() req: AuthenticatedRequest,
     @Query('page') page?: string,
@@ -70,29 +107,53 @@ export class NotificationsController {
     return { notifications, total }
   }
 
-  /**
-   * 取得未讀通知數量
-   */
   @Get('unread-count')
+  @ApiOperation({ summary: '取得未讀通知數量', description: '取得當前用戶的未讀通知數量' })
+  @ApiResponse({
+    status: 200,
+    description: '成功取得未讀數量',
+    schema: {
+      type: 'object',
+      properties: {
+        count: { type: 'number' },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: '未授權' })
   async getUnreadCount(@Req() req: AuthenticatedRequest) {
     const count = await this.notificationsService.getUnreadCount(req.user.userId)
     return { count }
   }
 
-  /**
-   * 標記通知為已讀
-   */
   @Post('read')
+  @ApiOperation({ summary: '標記通知為已讀', description: '將指定的通知標記為已讀' })
+  @ApiBody({
+    description: '要標記為已讀的通知 ID 列表',
+    schema: {
+      type: 'object',
+      required: ['notificationIds'],
+      properties: {
+        notificationIds: {
+          type: 'array',
+          items: { type: 'number' },
+          example: [1, 2, 3],
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: '標記成功' })
+  @ApiResponse({ status: 400, description: '請求參數錯誤' })
+  @ApiResponse({ status: 401, description: '未授權' })
   @UsePipes(ZodValidationPipe(MarkNotificationReadSchema))
   async markAsRead(@Req() req: AuthenticatedRequest, @Body() dto: MarkNotificationReadDto) {
     await this.notificationsService.markAsRead(req.user.userId, dto.notificationIds)
     return { success: true }
   }
 
-  /**
-   * 標記所有通知為已讀
-   */
   @Post('read-all')
+  @ApiOperation({ summary: '標記所有通知為已讀', description: '將當前用戶的所有通知標記為已讀' })
+  @ApiResponse({ status: 200, description: '標記成功' })
+  @ApiResponse({ status: 401, description: '未授權' })
   async markAllAsRead(@Req() req: AuthenticatedRequest) {
     await this.notificationsService.markAllAsRead(req.user.userId)
     return { success: true }
@@ -100,10 +161,40 @@ export class NotificationsController {
 
   // ==================== 通知偏好設定 ====================
 
-  /**
-   * 取得通知偏好設定
-   */
   @Get('preferences')
+  @ApiOperation({ summary: '取得通知偏好設定', description: '取得當前用戶的通知偏好設定及各通道狀態' })
+  @ApiResponse({
+    status: 200,
+    description: '成功取得偏好設定',
+    schema: {
+      type: 'object',
+      properties: {
+        preferences: {
+          type: 'object',
+          properties: {
+            lineNotifyEnabled: { type: 'boolean' },
+            lineNotifyConnected: { type: 'boolean' },
+            webPushEnabled: { type: 'boolean' },
+            telegramEnabled: { type: 'boolean' },
+            telegramConnected: { type: 'boolean' },
+            orderDeadlineReminder: { type: 'boolean' },
+            orderSummaryCompleted: { type: 'boolean' },
+            orderStarted: { type: 'boolean' },
+            deadlineReminderMinutes: { type: 'number' },
+          },
+        },
+        channelStatus: {
+          type: 'object',
+          properties: {
+            lineNotify: { type: 'object', properties: { configured: { type: 'boolean' } } },
+            webPush: { type: 'object', properties: { configured: { type: 'boolean' }, vapidPublicKey: { type: 'string' } } },
+            telegram: { type: 'object', properties: { configured: { type: 'boolean' } } },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: '未授權' })
   async getPreferences(@Req() req: AuthenticatedRequest) {
     const preferences = await this.notificationsService.getPreferences(req.user.userId)
     const channelStatus = this.notificationsService.getChannelStatus()
@@ -125,10 +216,26 @@ export class NotificationsController {
     }
   }
 
-  /**
-   * 更新通知偏好設定
-   */
   @Patch('preferences')
+  @ApiOperation({ summary: '更新通知偏好設定', description: '更新當前用戶的通知偏好設定' })
+  @ApiBody({
+    description: '要更新的偏好設定（所有欄位皆為可選）',
+    schema: {
+      type: 'object',
+      properties: {
+        lineNotifyEnabled: { type: 'boolean' },
+        webPushEnabled: { type: 'boolean' },
+        telegramEnabled: { type: 'boolean' },
+        orderDeadlineReminder: { type: 'boolean' },
+        orderSummaryCompleted: { type: 'boolean' },
+        orderStarted: { type: 'boolean' },
+        deadlineReminderMinutes: { type: 'number', minimum: 5, maximum: 120 },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: '更新成功' })
+  @ApiResponse({ status: 400, description: '請求參數錯誤' })
+  @ApiResponse({ status: 401, description: '未授權' })
   @UsePipes(ZodValidationPipe(UpdateNotificationPreferenceSchema))
   async updatePreferences(
     @Req() req: AuthenticatedRequest,
@@ -152,10 +259,20 @@ export class NotificationsController {
 
   // ==================== Line Notify ====================
 
-  /**
-   * 取得 Line Notify 授權 URL
-   */
   @Get('line-notify/auth-url')
+  @ApiOperation({ summary: '取得 Line Notify 授權 URL', description: '取得 Line Notify OAuth 2.0 授權頁面的 URL' })
+  @ApiResponse({
+    status: 200,
+    description: '成功取得授權 URL',
+    schema: {
+      type: 'object',
+      properties: {
+        authUrl: { type: 'string', format: 'uri' },
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Line Notify 尚未設定' })
+  @ApiResponse({ status: 401, description: '未授權' })
   getLineNotifyAuthUrl(@Req() req: AuthenticatedRequest) {
     const authUrl = this.notificationsService.getLineNotifyAuthUrl(req.user.userId)
 
@@ -166,11 +283,13 @@ export class NotificationsController {
     return { authUrl }
   }
 
-  /**
-   * Line Notify OAuth 回調（不需要認證）
-   */
   @Public()
   @Get('line-notify/callback')
+  @ApiOperation({ summary: 'Line Notify OAuth 回調', description: 'Line Notify OAuth 2.0 授權回調端點（無需認證）' })
+  @ApiQuery({ name: 'code', type: 'string', description: '授權碼' })
+  @ApiQuery({ name: 'state', type: 'string', description: '狀態參數' })
+  @ApiResponse({ status: 302, description: '重導向至前端設定頁面' })
+  @ApiResponse({ status: 400, description: '無效的回調參數' })
   async lineNotifyCallback(
     @Query('code') code: string,
     @Query('state') state: string,
@@ -190,10 +309,10 @@ export class NotificationsController {
     }
   }
 
-  /**
-   * 撤銷 Line Notify 連結
-   */
   @Delete('line-notify')
+  @ApiOperation({ summary: '撤銷 Line Notify 連結', description: '撤銷與 Line Notify 的連結' })
+  @ApiResponse({ status: 200, description: '撤銷成功' })
+  @ApiResponse({ status: 401, description: '未授權' })
   async revokeLineNotify(@Req() req: AuthenticatedRequest) {
     await this.notificationsService.revokeLineNotify(req.user.userId)
     return { success: true }
@@ -201,10 +320,19 @@ export class NotificationsController {
 
   // ==================== Web Push ====================
 
-  /**
-   * 取得 VAPID 公鑰
-   */
   @Get('web-push/vapid-public-key')
+  @ApiOperation({ summary: '取得 VAPID 公鑰', description: '取得 Web Push VAPID 公鑰用於訂閱' })
+  @ApiResponse({
+    status: 200,
+    description: '成功取得 VAPID 公鑰',
+    schema: {
+      type: 'object',
+      properties: {
+        vapidPublicKey: { type: 'string' },
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Web Push 尚未設定' })
   getVapidPublicKey() {
     const channelStatus = this.notificationsService.getChannelStatus()
 
@@ -215,10 +343,29 @@ export class NotificationsController {
     return { vapidPublicKey: channelStatus.webPush.vapidPublicKey }
   }
 
-  /**
-   * 儲存 Web Push 訂閱
-   */
   @Post('web-push/subscribe')
+  @ApiOperation({ summary: '儲存 Web Push 訂閱', description: '儲存瀏覽器的 Web Push 訂閱資訊' })
+  @ApiBody({
+    description: 'Web Push 訂閱資訊',
+    schema: {
+      type: 'object',
+      required: ['endpoint', 'keys'],
+      properties: {
+        endpoint: { type: 'string', format: 'uri' },
+        keys: {
+          type: 'object',
+          properties: {
+            p256dh: { type: 'string' },
+            auth: { type: 'string' },
+          },
+        },
+        userAgent: { type: 'string' },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: '訂閱成功' })
+  @ApiResponse({ status: 400, description: '請求參數錯誤' })
+  @ApiResponse({ status: 401, description: '未授權' })
   @UsePipes(ZodValidationPipe(WebPushSubscriptionSchema))
   async saveWebPushSubscription(
     @Req() req: AuthenticatedRequest,
@@ -228,10 +375,21 @@ export class NotificationsController {
     return { success: true }
   }
 
-  /**
-   * 取消 Web Push 訂閱
-   */
   @Delete('web-push/subscribe')
+  @ApiOperation({ summary: '取消 Web Push 訂閱', description: '取消指定端點的 Web Push 訂閱' })
+  @ApiBody({
+    description: '要取消訂閱的端點',
+    schema: {
+      type: 'object',
+      required: ['endpoint'],
+      properties: {
+        endpoint: { type: 'string', format: 'uri' },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: '取消訂閱成功' })
+  @ApiResponse({ status: 400, description: '缺少 endpoint 參數' })
+  @ApiResponse({ status: 401, description: '未授權' })
   async removeWebPushSubscription(
     @Req() req: AuthenticatedRequest,
     @Body('endpoint') endpoint: string,
@@ -246,10 +404,19 @@ export class NotificationsController {
 
   // ==================== Telegram ====================
 
-  /**
-   * 取得 Telegram Bot 連結 URL
-   */
   @Get('telegram/link-url')
+  @ApiOperation({ summary: '取得 Telegram Bot 連結 URL', description: '取得 Telegram Bot 的連結 URL' })
+  @ApiResponse({
+    status: 200,
+    description: '成功取得連結 URL',
+    schema: {
+      type: 'object',
+      properties: {
+        linkUrl: { type: 'string', format: 'uri' },
+      },
+    },
+  })
+  @ApiResponse({ status: 400, description: 'Telegram Bot 尚未設定' })
   async getTelegramLinkUrl() {
     const linkUrl = await this.notificationsService.getTelegramBotLinkUrl()
 
@@ -260,10 +427,21 @@ export class NotificationsController {
     return { linkUrl }
   }
 
-  /**
-   * 設定 Telegram Chat ID
-   */
   @Patch('telegram/chat-id')
+  @ApiOperation({ summary: '設定 Telegram Chat ID', description: '設定用戶的 Telegram Chat ID' })
+  @ApiBody({
+    description: 'Telegram Chat ID',
+    schema: {
+      type: 'object',
+      required: ['chatId'],
+      properties: {
+        chatId: { type: 'string', example: '123456789' },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: '設定成功' })
+  @ApiResponse({ status: 400, description: '缺少 chatId 參數' })
+  @ApiResponse({ status: 401, description: '未授權' })
   async setTelegramChatId(@Req() req: AuthenticatedRequest, @Body('chatId') chatId: string) {
     if (!chatId) {
       throw new BadRequestException('缺少 chatId 參數')
@@ -273,10 +451,10 @@ export class NotificationsController {
     return { success: true }
   }
 
-  /**
-   * 撤銷 Telegram 連結
-   */
   @Delete('telegram')
+  @ApiOperation({ summary: '撤銷 Telegram 連結', description: '撤銷與 Telegram 的連結' })
+  @ApiResponse({ status: 200, description: '撤銷成功' })
+  @ApiResponse({ status: 401, description: '未授權' })
   async revokeTelegram(@Req() req: AuthenticatedRequest) {
     await this.notificationsService.revokeTelegram(req.user.userId)
     return { success: true }
@@ -284,10 +462,25 @@ export class NotificationsController {
 
   // ==================== 測試通知 ====================
 
-  /**
-   * 發送測試通知
-   */
   @Post('test')
+  @ApiOperation({ summary: '發送測試通知', description: '發送測試通知到指定的通知管道' })
+  @ApiBody({
+    description: '測試通知參數',
+    schema: {
+      type: 'object',
+      required: ['channel'],
+      properties: {
+        channel: {
+          type: 'string',
+          enum: ['web_push', 'line_notify', 'telegram'],
+          example: 'web_push',
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 200, description: '測試通知發送成功' })
+  @ApiResponse({ status: 400, description: '請求參數錯誤或通知管道未設定' })
+  @ApiResponse({ status: 401, description: '未授權' })
   @UsePipes(ZodValidationPipe(SendTestNotificationSchema))
   async sendTestNotification(
     @Req() req: AuthenticatedRequest,
