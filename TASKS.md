@@ -133,12 +133,12 @@
 - [ ] 實作資料庫遷移腳本 - 開發環境使用 synchronize，生產環境需手動建立遷移
 
 ### 12. 測試
-- [ ] 撰寫單元測試（前端組件）
-- [ ] 撰寫單元測試（後端 API）
-- [ ] 撰寫整合測試
-- [ ] 實作 E2E 測試（可選）
-- [ ] 進行跨瀏覽器測試
-- [ ] 進行手機裝置實機測試
+- [x] 撰寫單元測試（前端組件）- Vitest + Vue Test Utils，測試 Pinia stores（auth、stores）
+- [x] 撰寫單元測試（後端 API）- Jest + @nestjs/testing，測試 auth、stores、orders services
+- [ ] 撰寫整合測試 - 待補充
+- [ ] 實作 E2E 測試（可選）- 可使用 Playwright 或 Cypress
+- [ ] 進行跨瀏覽器測試 - 待手動執行
+- [ ] 進行手機裝置實機測試 - 待手動執行
 
 ### 13. 部署與維護
 - [ ] 選擇部署平台（Vercel/Netlify + Heroku/AWS/VPS）
