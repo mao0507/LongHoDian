@@ -61,6 +61,7 @@ export default {
         'ds-050': 'var(--ds-space-050)',
         'ds-075': 'var(--ds-space-075)',
         'ds-100': 'var(--ds-space-100)',
+        'ds-125': 'var(--ds-space-125)',
         'ds-150': 'var(--ds-space-150)',
         'ds-200': 'var(--ds-space-200)',
         'ds-250': 'var(--ds-space-250)',
